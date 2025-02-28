@@ -1,16 +1,13 @@
 # (i) subscrever ao tópico de pose do turtlesim, 
 # (ii) subscrever ao tópico /goal 3, onde são publicadas mensagens do tipo geometry_msgs/msg/Pose2D,
 # (iii) publicar no tópico de comando de velocidade do turtlesim.
+
 import rclpy
-import math
+import math 
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, Pose2D
 from turtlesim.msg import Pose
 
-# TODO
-# ele não está conseguindo calcular o erro corretamente 
-# exemplo: coloco a meta para x=11 e y=11 e ele consegue ajustar o x rapidamente mas o y ele demora MUITO ...cresce de 0.01 em 0.01
-# ele ainda tá com um erro grande...
 
 class TurtleController(Node):
     def __init__(self):
@@ -24,30 +21,18 @@ class TurtleController(Node):
         self.init_variables()
 
 
-    # def timer_callback(self):
-    #     msg = String()
-    #     msg.data = 'Hello World: %d' % self.i
-    #     self.publisher_.publish(msg)
-    #     self.get_logger().info('Publishing: "%s"' % msg.data)
-    #     self.i += 1
-
-
     def init_publisher(self):
-
+        # publica a velocidade da tartaruga a cada 0.5 segundos
         self.publisher_ = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.pub_callback)
-
-        print("Publisher iniciado")
+        self.timer = self.create_timer(0.1, self.pub_callback)
 
     def init_subscribers(self):
 
-        # verifica a posição inicial da tartaruga
+        # verifica a posição da tartaruga
         self.create_subscription(Pose, '/turtle1/pose', self.pose_callback, 10)
         # verifica o goal 
         self.create_subscription(Pose2D, '/goal', self.goal_callback, 10)
 
-        print("Subscribers iniciados")
 
     def init_variables(self):
 
@@ -56,21 +41,28 @@ class TurtleController(Node):
         self.theta = 0.0
         self.x_goal = None
         self.y_goal = None
-        self.k_omega = 2.0
-        print("Variáveis inicializadas.")
+        self.theta_goal = None
+
 
     def pose_callback(self, msg):
+
         """Callback para receber a pose atual da tartaruga"""
+
         self.x = msg.x
         self.y = msg.y
         self.theta = msg.theta
+
         print(f"Atualizando pose: x={self.x}, y={self.y}, theta={self.theta}")
 
     def goal_callback(self, msg):
+
         """Callback para receber a posição desejada"""
+
         self.x_goal = msg.x
         self.y_goal = msg.y
-        print(f"Novo objetivo recebido: xd={self.x_goal}, yd={self.y_goal}")
+        self.theta_goal = msg.theta
+
+        print(f"Novo objetivo recebido: xd={self.x_goal}, yd={self.y_goal}, theta={self.theta_goal}")
 
     def pub_callback(self):
 
@@ -81,16 +73,32 @@ class TurtleController(Node):
         # Calcula erro de posição 
         x_error = self.x_goal - self.x
         y_error = self.y_goal - self.y
-        rho = math.sqrt(x_error**2 + y_error**2)
-        alpha = math.atan2(y_error, x_error) - self.theta
+        theta_error = self.theta_goal - self.theta
+        
+        # rho -> distância do robô até o objetivo
+        rho = math.sqrt(x_error**2 + y_error**2) #quanto maior rho mais longe o robô está do objetivo
+        
+        # alfa -> ângulo entre a direção atual do robô e a linha reta até o objetivo
+        alpha = math.atan2(y_error, x_error) - self.theta # se for zero o robô já está na direção correta, se não estiver ele precisa girar
 
         # Definir limiar de erro para parar a tartaruga
-        if rho < 0.1:
-            v, omega = 0.0, 0.0
+        if rho < 0.01:
+            if abs(theta_error) > 0.01:  
+                v = 0.0
+                omega = 1.0 * theta_error 
+            else:
+                v = 0.0
+                omega = 0.0  
+
         else:
+
             vmax = 1.0
             k_omega = 2.0
-            v = vmax * math.tanh(rho)
+            
+            #velocidade linear 
+            v = vmax * math.tanh(rho) 
+
+            #velocidade angular
             omega = k_omega * alpha
 
         # Publica o comando de velocidade
@@ -102,7 +110,6 @@ class TurtleController(Node):
 
 
 def main():
-    print('Hi from turtle_control_Mariana.')
     rclpy.init()
     node = TurtleController()
     rclpy.spin(node)
