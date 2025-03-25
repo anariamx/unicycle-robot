@@ -19,8 +19,13 @@ ros2 run turtlesim turtlesim_node
 ros2 run turtle_control_Mariana turtle_control
 
 ```
-4. Publique um objetivo
+4. Publique um objetivo (posição) manualmente
 ```bash 
 ros2 topic pub /ros2_ws/goal geometry_msgs/msg/Pose2D \
 "{x: 7.0, y: 7.0, theta: 0.0}"
+```
+
+4. Rode o nó que define novas posições
+```bash 
+ros2 run turtle_control_Mariana goal_manager
 ```
