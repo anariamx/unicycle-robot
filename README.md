@@ -25,7 +25,7 @@ ros2 topic pub /ros2_ws/goal geometry_msgs/msg/Pose2D \
 "{x: 7.0, y: 7.0, theta: 0.0}"
 ```
 
-4. Rode o nó que define novas posições
+5. Rode o nó que define novas posições
 ```bash 
 ros2 run turtle_control_Mariana goal_manager
 ```
