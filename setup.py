@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'turtle_control = turtle_control_Mariana.turtle_control:main'
+            'turtle_control = turtle_control_Mariana.turtle_control:main',
+            'goal_manager = turtle_control_Mariana.goal_manager:main'
         ],
     },
 )
