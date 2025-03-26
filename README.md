@@ -5,7 +5,6 @@ O objetivo deste laboratório foi implementar um nó de controle para a tartarug
 1. Compile
    
 ```bash 
-cd ~/ros2_ws
 colcon build
 source install/setup.bash
 ```
@@ -21,7 +20,7 @@ ros2 run turtle_control_Mariana turtle_control
 ```
 4. Publique um objetivo (posição) manualmente
 ```bash 
-ros2 topic pub /ros2_ws/goal geometry_msgs/msg/Pose2D \
+ros2 topic pub /goal geometry_msgs/msg/Pose2D \
 "{x: 7.0, y: 7.0, theta: 0.0}"
 ```
 
